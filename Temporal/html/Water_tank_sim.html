@@ -1,0 +1,277 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Water_tank_sim</title><meta name="generator" content="MATLAB 9.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2020-02-24"><meta name="DC.source" content="Water_tank_sim.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">Hybrid Control Homework #2</a></li><li><a href="#2">Problem 1 Temporal</a></li></ul></div><h2 id="1">Hybrid Control Homework #2</h2><pre class="codeinput">clc; clear; close <span class="string">all</span>;
+</pre><h2 id="2">Problem 1 Temporal</h2><pre class="codeinput"><span class="comment">%%%%% Parameters</span>
+r1 = 5;
+r2 = 5;
+v1 = 3;
+v2 = 4;
+w = 6;
+
+
+epsilon = [0, 0.05, 0.2, 0.5, 0.6];
+
+<span class="keyword">for</span> j = 1:length(epsilon)
+    <span class="comment">%%%%% Initial conditions</span>
+    x1 = 7;
+    x2 = 7;
+    x3 = 0;
+
+    x0 = [x1; x2; x3];
+
+    Tspan = [0 10] ;
+    t0 = 0 ; <span class="comment">% Initial Time</span>
+    t_vec = [] ; x = [] ;
+
+    q0_bool = false;
+    q1_bool = false;
+    q2_bool = false;
+    q3_bool = false;
+
+    <span class="keyword">if</span> x0(2) &gt;= r2
+        func = @(t,x) q0(t,x,w,v1,v2,r1,r2);
+        options = odeset(<span class="string">'Events'</span>,@(t,x) event_q0(t,x,w,v1,v2,r1,r2,epsilon(j)));
+        q0_bool = true;
+
+    <span class="keyword">else</span>
+        func = @(t,x) q2(t,x,w,v1,v2,r1,r2);
+        options = odeset(<span class="string">'Events'</span>,@(t,x) event_q2(t,x,w,v1,v2,r1,r2,epsilon(j)));
+        q2_bool = true;
+    <span class="keyword">end</span>
+
+    <span class="keyword">for</span> i = 1:10
+        <span class="comment">% Continuous Dynamics</span>
+        [t,x_vec] = ode45(func, t0+Tspan, x0, options) ;
+        <span class="comment">% Save simulation data</span>
+        t_vec = [t_vec; t] ;
+        x = [x; x_vec] ;
+        <span class="comment">% Discrete Impact Dynamics</span>
+        x0 = x_vec(end,:);
+        t0 = t_vec(end);
+
+        <span class="comment">% Simulate the system until event (water tank) occurs</span>
+        <span class="keyword">if</span> x0(2) &lt;= r2 &amp;&amp; q0_bool
+            func = @(t,x) q1(t,x,w,v1,v2,r1,r2);
+            options = odeset(<span class="string">'Events'</span>,@(t,x) event_q1(t,x,w,v1,v2,r1,r2,epsilon(j)));
+            x0(3) = 0;
+            q0_bool = false;
+            q1_bool = true;
+            q2_bool = false;
+            q3_bool = false;
+
+
+        <span class="keyword">elseif</span> x0(3) &gt;= epsilon(j) &amp;&amp; q1_bool
+            func = @(t,x) q2(t,x,w,v1,v2,r1,r2);
+            options = odeset(<span class="string">'Events'</span>,@(t,x) event_q2(t,x,w,v1,v2,r1,r2,epsilon(j)));
+            <span class="comment">%x0(4) = x0(2);</span>
+            q0_bool = false;
+            q1_bool = false;
+            q2_bool = true;
+            q3_bool = false;
+
+        <span class="keyword">elseif</span> x0(1) &lt;= r1 &amp;&amp; q2_bool
+            func = @(t,x) q3(t,x,w,v1,v2,r1,r2);
+            options = odeset(<span class="string">'Events'</span>,@(t,x) event_q3(t,x,w,v1,v2,r1,r2,epsilon(j)));
+            x0(3) = 0;
+            q0_bool = false;
+            q1_bool = false;
+            q2_bool = false;
+            q3_bool = true;
+
+
+        <span class="keyword">elseif</span> x0(3) &gt;= epsilon(j) &amp;&amp; q3_bool
+            func = @(t,x) q0(t,x,w,v1,v2,r1,r2);
+            options = odeset(<span class="string">'Events'</span>,@(t,x) event_q0(t,x,w,v1,v2,r1,r2,epsilon(j)));
+            <span class="comment">%x0(4) = x0(2);</span>
+            q0_bool = true;
+            q1_bool = false;
+            q2_bool = false;
+            q3_bool = false;
+        <span class="keyword">end</span>
+
+    <span class="keyword">end</span>
+
+    figure();
+    plot(t_vec,x(:,1));
+    hold <span class="string">on</span>;
+    plot(t_vec,x(:,2));
+    xlabel(<span class="string">"time"</span>);
+    ylabel(<span class="string">"water level"</span>);
+    k = epsilon;
+    title(<span class="string">"Epsilon"</span>);
+    hold <span class="string">off</span>;
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="Water_tank_sim_01.png" alt=""> <img vspace="5" hspace="5" src="Water_tank_sim_02.png" alt=""> <img vspace="5" hspace="5" src="Water_tank_sim_03.png" alt=""> <img vspace="5" hspace="5" src="Water_tank_sim_04.png" alt=""> <img vspace="5" hspace="5" src="Water_tank_sim_05.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Hybrid Control Homework #2
+clc; clear; close all;
+%% Problem 1 Temporal
+%%%%% Parameters
+r1 = 5;
+r2 = 5;
+v1 = 3;
+v2 = 4;
+w = 6;
+
+
+epsilon = [0, 0.05, 0.2, 0.5, 0.6];
+
+for j = 1:length(epsilon)
+    %%%%% Initial conditions
+    x1 = 7; 
+    x2 = 7;
+    x3 = 0;
+    
+    x0 = [x1; x2; x3];
+    
+    Tspan = [0 10] ;
+    t0 = 0 ; % Initial Time
+    t_vec = [] ; x = [] ;
+    
+    q0_bool = false;
+    q1_bool = false;
+    q2_bool = false;
+    q3_bool = false;
+    
+    if x0(2) >= r2
+        func = @(t,x) q0(t,x,w,v1,v2,r1,r2);
+        options = odeset('Events',@(t,x) event_q0(t,x,w,v1,v2,r1,r2,epsilon(j)));
+        q0_bool = true;
+
+    else
+        func = @(t,x) q2(t,x,w,v1,v2,r1,r2);
+        options = odeset('Events',@(t,x) event_q2(t,x,w,v1,v2,r1,r2,epsilon(j)));
+        q2_bool = true;
+    end
+
+    for i = 1:10
+        % Continuous Dynamics
+        [t,x_vec] = ode45(func, t0+Tspan, x0, options) ;
+        % Save simulation data
+        t_vec = [t_vec; t] ;
+        x = [x; x_vec] ;
+        % Discrete Impact Dynamics
+        x0 = x_vec(end,:);
+        t0 = t_vec(end);
+        
+        % Simulate the system until event (water tank) occurs
+        if x0(2) <= r2 && q0_bool
+            func = @(t,x) q1(t,x,w,v1,v2,r1,r2);
+            options = odeset('Events',@(t,x) event_q1(t,x,w,v1,v2,r1,r2,epsilon(j)));
+            x0(3) = 0;
+            q0_bool = false;
+            q1_bool = true;
+            q2_bool = false;
+            q3_bool = false;
+            
+
+        elseif x0(3) >= epsilon(j) && q1_bool 
+            func = @(t,x) q2(t,x,w,v1,v2,r1,r2);
+            options = odeset('Events',@(t,x) event_q2(t,x,w,v1,v2,r1,r2,epsilon(j)));
+            %x0(4) = x0(2);
+            q0_bool = false;
+            q1_bool = false;
+            q2_bool = true;
+            q3_bool = false;
+            
+        elseif x0(1) <= r1 && q2_bool
+            func = @(t,x) q3(t,x,w,v1,v2,r1,r2);
+            options = odeset('Events',@(t,x) event_q3(t,x,w,v1,v2,r1,r2,epsilon(j)));
+            x0(3) = 0;
+            q0_bool = false;
+            q1_bool = false;
+            q2_bool = false;
+            q3_bool = true;
+            
+
+        elseif x0(3) >= epsilon(j) && q3_bool 
+            func = @(t,x) q0(t,x,w,v1,v2,r1,r2);
+            options = odeset('Events',@(t,x) event_q0(t,x,w,v1,v2,r1,r2,epsilon(j)));
+            %x0(4) = x0(2);
+            q0_bool = true;
+            q1_bool = false;
+            q2_bool = false;
+            q3_bool = false;
+        end
+
+    end
+    
+    figure();
+    plot(t_vec,x(:,1));
+    hold on;
+    plot(t_vec,x(:,2));
+    xlabel("time");
+    ylabel("water level");
+    k = epsilon;
+    title("Epsilon");
+    hold off;
+end
+
+##### SOURCE END #####
+--></body></html>
